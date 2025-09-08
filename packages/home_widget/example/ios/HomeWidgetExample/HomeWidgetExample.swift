@@ -8,7 +8,7 @@
 import SwiftUI
 import WidgetKit
 
-private let widgetGroupId = "group.lavaRocks.app"
+private let widgetGroupId = "group.example.widget_group"
 
 struct Provider: TimelineProvider {
   func placeholder(in context: Context) -> ExampleEntry {
@@ -88,6 +88,7 @@ struct HomeWidgetExample: Widget {
   var body: some WidgetConfiguration {
     StaticConfiguration(kind: kind, provider: Provider()) { entry in
       HomeWidgetExampleEntryView(entry: entry)
+            .containerBackground(.fill.tertiary, for: .widget)
     }
     .configurationDisplayName("My Widget")
     .description("This is an example widget.")

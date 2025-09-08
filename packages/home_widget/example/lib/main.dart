@@ -8,7 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:workmanager/workmanager.dart';
 
-const groupID = "group.lavaRocksApp";
+const groupID = "group.example.widget_group";
 
 /// Used for Background Updates using Workmanager Plugin
 @pragma("vm:entry-point")
@@ -44,6 +44,8 @@ void callbackDispatcher() async {
 /// Called when Doing Background Work initiated from Widget
 @pragma("vm:entry-point")
 Future<void> interactiveCallback(Uri? data) async {
+    print("Interactive Callback Called");
+
   if (data?.host == 'titleclicked') {
     final greetings = [
       'Hello',
@@ -56,7 +58,7 @@ Future<void> interactiveCallback(Uri? data) async {
       'xin chào',
     ];
     final selectedGreeting = greetings[Random().nextInt(greetings.length)];
-    await HomeWidget.setAppGroupId('YOUR_GROUP_ID');
+    await HomeWidget.setAppGroupId(groupID);
     await HomeWidget.saveWidgetData<String>('title', selectedGreeting);
     await HomeWidget.updateWidget(
       name: 'HomeWidgetExampleProvider',
@@ -93,7 +95,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    HomeWidget.setAppGroupId('YOUR_GROUP_ID');
+    HomeWidget.setAppGroupId(groupID);
     HomeWidget.registerInteractivityCallback(interactiveCallback);
     _checkPinability();
   }
@@ -135,7 +137,7 @@ class _MyAppState extends State<MyApp> {
     try {
       return Future.wait([
         HomeWidget.updateWidget(
-          name: 'HomeWidgetExampleProvider',
+          name: 'HomeWidgetExample',
           iOSName: 'HomeWidgetExample',
         ),
         if (Platform.isAndroid)
@@ -165,6 +167,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _sendAndUpdate() async {
+    print("Updating widget with new Data");
     await _sendData();
     await _updateWidget();
   }

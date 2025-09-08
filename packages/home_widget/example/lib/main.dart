@@ -137,7 +137,7 @@ class _MyAppState extends State<MyApp> {
     try {
       return Future.wait([
         HomeWidget.updateWidget(
-          name: 'HomeWidgetExample',
+          name: 'HomeWidgetExampleProvider',
           iOSName: 'HomeWidgetExample',
         ),
         if (Platform.isAndroid)

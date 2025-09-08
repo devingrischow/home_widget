@@ -8,6 +8,8 @@ import 'package:flutter/services.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:workmanager/workmanager.dart';
 
+const groupID = "group.lavaRocksApp";
+
 /// Used for Background Updates using Workmanager Plugin
 @pragma("vm:entry-point")
 void callbackDispatcher() async {

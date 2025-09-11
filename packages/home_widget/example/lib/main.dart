@@ -74,6 +74,12 @@ Future<void> interactiveCallback(Uri? data) async {
 }
 
 void main() {
+  //Error Management for macOS run Testing
+  FlutterError.onError = (details) {
+    FlutterError.presentError(details);
+    if (kReleaseMode) exit(1);
+  };
+
   WidgetsFlutterBinding.ensureInitialized();
   Workmanager().initialize(callbackDispatcher, isInDebugMode: kDebugMode);
   runApp(const MaterialApp(home: MyApp()));

@@ -5,7 +5,8 @@ import UIKit
 import WidgetKit
 
 public class HomeWidgetPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
-
+  //Configuration content only available from ios 17 and after 
+  //Allows for communication and enables home screen app interactions
   @available(iOS 17.0, *)
   private static var configurationLookup: [String: any WidgetConfigurationIntent.Type] = [:]
 
@@ -47,7 +48,7 @@ public class HomeWidgetPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
     let eventChannel = FlutterEventChannel(
       name: "home_widget/updates", binaryMessenger: registrar.messenger())
     eventChannel.setStreamHandler(instance)
-
+    
     guard isRunningInAppExtension() == false else {
       return
     }
@@ -396,6 +397,7 @@ protocol _AnyIntentParameter {
   var anyWrappedValue: Any { get }
 }
 
+//Introduced for iOS 16 with significant widget changes
 @available(iOS 16.0, *)
 extension IntentParameter: _AnyIntentParameter {
   var anyWrappedValue: Any {

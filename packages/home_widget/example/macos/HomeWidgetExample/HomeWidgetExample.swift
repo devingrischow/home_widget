@@ -8,29 +8,29 @@
 import WidgetKit
 import SwiftUI
 
+private let widgetGroupId = "group.example.widget_group"
+
 struct Provider: TimelineProvider {
-    func placeholder(in context: Context) -> SimpleEntry {
-        SimpleEntry(date: Date(), emoji: "😀")
+    func placeholder(in context: Context) -> ExampleEntry {
+      ExampleEntry(date: Date(), title: "Placeholder Title", message: "Placeholder Message")
     }
 
-    func getSnapshot(in context: Context, completion: @escaping (SimpleEntry) -> ()) {
-        let entry = SimpleEntry(date: Date(), emoji: "😀")
-        completion(entry)
+    func getSnapshot(in context: Context, completion: @escaping (ExampleEntry) -> Void) {
+      let data = UserDefaults.init(suiteName: widgetGroupId)
+      let entry = ExampleEntry(
+        date: Date(), title: data?.string(forKey: "title") ?? "No Title Set",
+        message: data?.string(forKey: "message") ?? "No Message Set"
+      )
+        
+      completion(entry)
     }
-
-    func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> ()) {
-        var entries: [SimpleEntry] = []
-
-        // Generate a timeline consisting of five entries an hour apart, starting from the current date.
-        let currentDate = Date()
-        for hourOffset in 0 ..< 5 {
-            let entryDate = Calendar.current.date(byAdding: .hour, value: hourOffset, to: currentDate)!
-            let entry = SimpleEntry(date: entryDate, emoji: "😀")
-            entries.append(entry)
-        }
-
-        let timeline = Timeline(entries: entries, policy: .atEnd)
+    
+    
+    func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> Void) {
+      getSnapshot(in: context) { (entry) in
+        let timeline = Timeline(entries: [entry], policy: .atEnd)
         completion(timeline)
+      }
     }
 
 //    func relevances() async -> WidgetRelevances<Void> {
@@ -38,9 +38,10 @@ struct Provider: TimelineProvider {
 //    }
 }
 
-struct SimpleEntry: TimelineEntry {
-    let date: Date
-    let emoji: String
+struct ExampleEntry: TimelineEntry {
+  let date: Date
+  let title: String
+  let message: String
 }
 
 struct HomeWidgetExampleEntryView : View {
@@ -54,7 +55,7 @@ struct HomeWidgetExampleEntryView : View {
             }
 
             Text("Emoji:")
-            Text(entry.emoji)
+//            Text(entry.emoji)
         }
     }
 }

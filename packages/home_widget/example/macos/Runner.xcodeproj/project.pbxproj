@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 70;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXAggregateTarget section */
@@ -21,6 +21,7 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		238C09442E727F0000615AC5 /* BackgroundIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 238C09432E727F0000615AC5 /* BackgroundIntent.swift */; };
 		23C243A72E72521B000FECA4 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 23C243A62E72521B000FECA4 /* WidgetKit.framework */; };
 		23C243A92E72521B000FECA4 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 23C243A82E72521B000FECA4 /* SwiftUI.framework */; };
 		23C243B52E72521D000FECA4 /* HomeWidgetExampleExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 23C243A52E72521B000FECA4 /* HomeWidgetExampleExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -74,6 +75,7 @@
 
 /* Begin PBXFileReference section */
 		1C31AC8B57DC86D8481C709B /* Pods_RunnerTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RunnerTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		238C09432E727F0000615AC5 /* BackgroundIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundIntent.swift; sourceTree = "<group>"; };
 		23C243A52E72521B000FECA4 /* HomeWidgetExampleExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = HomeWidgetExampleExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		23C243A62E72521B000FECA4 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		23C243A82E72521B000FECA4 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
@@ -221,6 +223,7 @@
 				33E51914231749380026EE4D /* Release.entitlements */,
 				33CC11242044D66E0003C045 /* Resources */,
 				33BA886A226E78AF003329D5 /* Configs */,
+				238C09432E727F0000615AC5 /* BackgroundIntent.swift */,
 			);
 			path = Runner;
 			sourceTree = "<group>";
@@ -523,6 +526,7 @@
 				33CC11132044BFA00003C045 /* MainFlutterWindow.swift in Sources */,
 				33CC10F12044A3C60003C045 /* AppDelegate.swift in Sources */,
 				335BBD1B22A9A15E00E9071D /* GeneratedPluginRegistrant.swift in Sources */,
+				238C09442E727F0000615AC5 /* BackgroundIntent.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

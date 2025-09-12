@@ -60,6 +60,7 @@ public class HomeWidgetPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
   }
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+    print("Handling")
     if call.method == "setAppGroupId" {
       guard let args = call.arguments else {
         return
@@ -362,11 +363,14 @@ public class HomeWidgetPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
     eventSink = nil
     return nil
   }
+    
+    
 
   public func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [AnyHashable: Any] = [:]
   ) -> Bool {
+      print("Launched With Options, \(launchOptions)")
     let launchUrl = (launchOptions[UIApplication.LaunchOptionsKey.url] as? NSURL)?.absoluteURL
     if launchUrl != nil && isWidgetUrl(url: launchUrl!) {
       initialUrl = launchUrl?.absoluteURL
@@ -379,6 +383,7 @@ public class HomeWidgetPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
     _ application: UIApplication, open url: URL,
     options: [UIApplication.OpenURLOptionsKey: Any] = [:]
   ) -> Bool {
+      print("Handed widgetUR: \(url)")
     if isWidgetUrl(url: url) {
       latestUrl = url
       return true

@@ -9,6 +9,7 @@ topics:
   - native
   - android
   - ios
+  - macos
 screenshots:
   - description: 'iOS Counter HomeScreen Widget'
     path: pub/screenshots/ios-counter.gif
@@ -42,4 +43,6 @@ flutter:
         package: es.antonborri.home_widget
         pluginClass: HomeWidgetPlugin
       ios:
+        pluginClass: HomeWidgetPlugin
+      macos: 
         pluginClass: HomeWidgetPlugin

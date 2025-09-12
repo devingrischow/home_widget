@@ -9,6 +9,7 @@ import AppIntents
 import Foundation
 import home_widget
 
+
 @available(iOS 17, *)
 public struct BackgroundIntent: AppIntent {
   static public var title: LocalizedStringResource = "HomeWidget Background Intent"

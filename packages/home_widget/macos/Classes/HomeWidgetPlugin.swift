@@ -1,5 +1,9 @@
 import Cocoa
 import FlutterMacOS
+import Intents
+import AppIntents
+import WidgetKit
+
 
 public class HomeWidgetPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
   private static var groupId: String?
@@ -45,12 +49,15 @@ public class HomeWidgetPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
     print("<-- Register Mac Function Called")
 
     let instance = HomeWidgetPlugin()
-    
-    let channel = FlutterMethodChannel(name: "home_widget", binaryMessenger: registrar.messenger())
+    //Registrar Flutter macOS vs iOS
+    //macOS: https://api.flutter.dev/macos-embedder/protocol_flutter_plugin_registrar-p.html
+    //iOS: https://api.flutter.dev/ios-embedder/protocol_flutter_plugin_registrar-p.html
+    //iOS uses methods for retriving values, meanwhile macOS uses properties
+    let channel = FlutterMethodChannel(name: "home_widget", binaryMessenger: registrar.messenger)
     registrar.addMethodCallDelegate(instance, channel: channel)
 
     let eventChannel = FlutterEventChannel(
-      name: "home_widget/updates", binaryMessenger: registrar.messenger())
+      name: "home_widget/updates", binaryMessenger: registrar.messenger)
     eventChannel.setStreamHandler(instance)
     
     guard isRunningInAppExtension() == false else {
@@ -137,31 +144,45 @@ public class HomeWidgetPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
   }
 
   //Multiple Handlers for application(s)
-  public func application(
-    _ application: UIApplication,
-    didFinishLaunchingWithOptions launchOptions: [AnyHashable: Any] = [:]
-  ) -> Bool {
-    print("<--- Application called")
-    let launchUrl = (launchOptions[UIApplication.LaunchOptionsKey.url] as? NSURL)?.absoluteURL
-    if launchUrl != nil && isWidgetUrl(url: launchUrl!) {
-      initialUrl = launchUrl?.absoluteURL
-      latestUrl = initialUrl
-    }
-    return true
+  public func application(_ application: NSApplication, open urls: [URL]) {
+      print("Application Handed Urls: \(urls)")
   }
+    
+  public func applicationDidFinishLaunching(_ notification: Notification) {
+      // notification.userInfo is usually empty/nil for widget launches
+      // This just tells you the app finished launching, not WHY
+      print("App launched")
+      // The notification doesn't contain widget info
+   }
 
-  public func application(
-    _ application: UIApplication, open url: URL,
-    options: [UIApplication.OpenURLOptionsKey: Any] = [:]
-  ) -> Bool {
-    print("<--- Application called: URL given: \(url)")
-
-    if isWidgetUrl(url: url) {
-      latestUrl = url
-      return true
-    }
-    return false
-  }
+  
+  
+//  public func application(
+//    _ application: NSApplication,
+//    didFinishLaunchingWithOptions launchOptions: [AnyHashable: Any] = [:]
+//  ) -> Bool {
+//    print("<--- Application called")
+//      NSApplication.userinfo
+//    let launchUrl = (launchOptions[UIApplication.LaunchOptionsKey.url] as? NSURL)?.absoluteURL
+//    if launchUrl != nil && isWidgetUrl(url: launchUrl!) {
+//      initialUrl = launchUrl?.absoluteURL
+//      latestUrl = initialUrl
+//    }
+//    return true
+//  }
+//
+//  public func application(
+//    _ application: UIApplication, open url: URL,
+//    options: [UIApplication.OpenURLOptionsKey: Any] = [:]
+//  ) -> Bool {
+//    print("<--- Application called: URL given: \(url)")
+//
+//    if isWidgetUrl(url: url) {
+//      latestUrl = url
+//      return true
+//    }
+//    return false
+//  }
 
   private func isWidgetUrl(url: URL) -> Bool {
     print("Is widgetURl Called. URL given: \(url)")
@@ -203,7 +224,10 @@ protocol _AnyIntentParameter {
 }
 
 
-//Iteration 1 Note: Currently no Exclusion given for no reason given needed here 
+//Iteration 1 Note: Currently no Exclusion given for no reason given needed here
+//Intent Parameter is only available to macOS 13+
+//For simplification, only modern widgets get access to the intent parameter (Subject to change during testing)
+@available(macOS 14.0, *)
 extension IntentParameter: _AnyIntentParameter {
   var anyWrappedValue: Any {
     return wrappedValue

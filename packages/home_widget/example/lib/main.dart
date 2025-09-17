@@ -13,6 +13,7 @@ const groupID = "group.example.widget_group";
 /// Used for Background Updates using Workmanager Plugin
 @pragma("vm:entry-point")
 void callbackDispatcher() async {
+  print("Callback dispatcher");
   Workmanager().executeTask((taskName, inputData) {
     final now = DateTime.now();
     return Future.wait<bool?>([

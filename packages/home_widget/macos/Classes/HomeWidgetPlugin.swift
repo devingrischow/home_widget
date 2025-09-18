@@ -5,6 +5,9 @@ import AppIntents
 import WidgetKit
 
 
+let minimumVersionMessage = "Widgets are only available on macOS 14.0 and above"
+
+
 public class HomeWidgetPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
   private static var groupId: String?
 
@@ -96,32 +99,98 @@ public class HomeWidgetPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
 
     } else if call.method == "saveWidgetData" {
       print("Handling Method Save Widget Data ---->")
+      if HomeWidgetPlugin.groupId == nil {
+        result(notInitializedError)
+        return
+      }
+      guard let args = call.arguments else {
+        return
+      }
+      print("Save Args: \(args)")
+      if let myArgs = args as? [String:Any?],
+        let id = myArgs["id"] as? String,
+        let data = myArgs["data"]
+        {
+          //Data Retrieved from stored preferences
+          let preferences = UserDefaults.init(suiteName: HomeWidgetPlugin.groupId)
+          //Only continue if Data is VALID and NOT NULL
+          if data != nil {
+            //Represent the retrieved data as a retrived flutter type
+            if let binaryData = data as? FlutterStandardTypedData {
+              preferences?.setValue(Data(binaryData.data), forKey: id)
+            }else{
+              preferences?.setValue(data, forKey: id)
+            }
+          }else{
+            preferences?.removeObject(forKey: id)
+          }
+          result(true)
+        }else{
+          result(
+          FlutterError(
+            code: "-1", message: "InvalidArguments saveWidgetData must be called with id and data",
+            details: nil))
+        }
 
     }else if call.method == "getWidgetData" {
       print("Handling Get Widget Data ---->")
+      if HomeWidgetPlugin.groupId == nil {
+        result(notInitializedError)
+        return
+      }
+      guard let args = call.arguments else {
+        return
+      }
+      print("Get Widget Data Args: \(args)")
+      if let myArgs = args as? [String: Any?],
+        let id = myArgs["id"] as? String,
+        let defaultValue = myArgs["defaultValue"]
+      {
+        let preferences = UserDefaults.init(suiteName: HomeWidgetPlugin.groupId)
+        result(preferences?.value(forKey: id) ?? defaultValue)
+      }else{
+        result(
+          FlutterError(
+            code: "-2", message: "InvalidArguments getWidgetData must be called with id",
+            details: nil)
+        )
+      }
 
     }else if call.method == "updateWidget" {
       print("Handling Update Widget Data ---->")
+      guard let args = call.arguments else {
+        return
+      }
+      print("Update args: \(args).")
+
+
 
     } else if call.method == "initiallyLaunchedFromHomeWidget" {
       print("Handling Method For initially Launched from Home Widget ---->")
       // Idea: Handle not only home screen widgets with this function,
       // BUT ALSO Notification Center widgets
-
+      if HomeWidgetPlugin.groupId == nil {
+        result(notInitializedError)
+        return
+      }
+      result(initialUrl?.absoluteString)
     } else if call.method == "registerBackgroundCallback" {
       print("Handling method for register background callback ---->")
+      if HomeWidgetPlugin.groupId == nil {
+        result(notInitializedError)
+        return
+      }
 
     } else if call.method == "isRequestPinWidgetSupported" {
-      print("Handling android Pin Widget Condition ---->")
-
+      //Not for macOS
       result(false)
     } else if call.method == "requestPinWidget" {
-      print("Handling android pin widget request ---->")
-
+      //Not for macOS
       result(nil)
     } else if call.method == "getInstalledWidgets" {
       print("Handling Get Installed Widgets ---->")
 
+      //Encompas for minimum version for macOS widgets (notification widgets included, at least until monitoring is no longer possible)
 
     } else {
       result(FlutterMethodNotImplemented)

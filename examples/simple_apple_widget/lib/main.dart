@@ -116,6 +116,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future _loadCountData() async {
+    print("Loading Count Data");
     try{
       return Future.wait([
         HomeWidget.getWidgetData<String>(countKey, defaultValue: '0')
@@ -131,6 +132,7 @@ class _MyHomePageState extends State<MyHomePage> {
     await _sendNewCountData();
     await _updateWidgets();
   }
+  
 
   @override
   void initState() {
@@ -188,12 +190,12 @@ class _MyHomePageState extends State<MyHomePage> {
             //2. Update the Count (just updates the count, pressing it also calls the updates)
             ElevatedButton(
               onPressed: _loadCountData, 
-              child: Text("Get Button Count", style: Theme.of(context).textTheme.headlineLarge,)
+              child: Text("Get Button Count", style: Theme.of(context).textTheme.headlineSmall,)
             ),
 
             ElevatedButton(
               onPressed: _sendAndUpdate, 
-              child: Text("Update Widget Count", style: Theme.of(context).textTheme.headlineLarge,)
+              child: Text("Update Widget Count", style: Theme.of(context).textTheme.headlineSmall,)
             ),
           ],
         ),

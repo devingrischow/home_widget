@@ -9,8 +9,12 @@ import 'package:home_widget/home_widget.dart';
 
 
 
+//MacOS Requires format of TEAMID.TeamName.Project to work
+//Signing Certificate MUST also be in Development 
+//Most Reliable Operation has occured when Running through Xcode.
+//Sep 22, 2025: Note: Continue to monitor and improve reliability and stability while adding more features.
+const groupID = "4DZJGNL44Y.example.widget_group";
 
-const groupID = "group.example.widget_group";
 const widgetName = "HomeWidgetExampleProvider";
 const iOSWidgetName = "HomeWidgetExample";
 

@@ -8,7 +8,7 @@
 import WidgetKit
 import SwiftUI
 
-private let widgetGroupId = "group.example.widget_group"
+private let widgetGroupId = "4DZJGNL44Y.example.widget_group"
 let countKey = "count";
 
 struct Provider: TimelineProvider {
@@ -17,11 +17,16 @@ struct Provider: TimelineProvider {
     }
 
     func getSnapshot(in context: Context, completion: @escaping (SimpleEntry) -> ()) {
-        let entry = SimpleEntry(date: Date(), count: "0")
+        print("Getting Snapshot")
+        let prefs = UserDefaults.init(suiteName: widgetGroupId)
+        let counterValue = prefs?.string(forKey: countKey) ?? "0"
+        print("Counter Values: \(counterValue)")
+        let entry = SimpleEntry(date: Date(), count: counterValue)
         completion(entry)
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> ()) {
+        print("Getting New TimeLine")
         
         getSnapshot(in: context) { (entry) in
             let timeline = Timeline(entries: [entry], policy: .atEnd)

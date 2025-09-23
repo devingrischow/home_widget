@@ -112,16 +112,21 @@ public class HomeWidgetPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
         let data = myArgs["data"]
         {
           //Data Retrieved from stored preferences
-          let preferences = UserDefaults.init(suiteName: HomeWidgetPlugin.groupId)
+          let preferences = UserDefaults(suiteName: HomeWidgetPlugin.groupId)
           //Only continue if Data is VALID and NOT NULL
           if data != nil {
             //Represent the retrieved data as a retrived flutter type
             if let binaryData = data as? FlutterStandardTypedData {
-              preferences?.setValue(Data(binaryData.data), forKey: id)
+              print("Basic Binary Set Value for Object: \(binaryData.data)")
+
+              preferences?.set(Data(binaryData.data), forKey: id)
             }else{
-              preferences?.setValue(data, forKey: id)
+              print("Basic Set Value for Object: \(data)")
+
+              preferences?.set(data, forKey: id)
             }
           }else{
+            print("Remove Object")
             preferences?.removeObject(forKey: id)
           }
           result(true)
@@ -146,8 +151,11 @@ public class HomeWidgetPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
         let id = myArgs["id"] as? String,
         let defaultValue = myArgs["defaultValue"]
       {
-        let preferences = UserDefaults.init(suiteName: HomeWidgetPlugin.groupId)
-        result(preferences?.value(forKey: id) ?? defaultValue)
+        let preferences = UserDefaults(suiteName: HomeWidgetPlugin.groupId)
+        let val = preferences?.value(forKey: id) ?? defaultValue
+        
+        print("Get Widget Values: \(String(describing: val))")
+        result(val)
       }else{
         result(
           FlutterError(
@@ -162,9 +170,27 @@ public class HomeWidgetPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
         return
       }
       print("Update args: \(args).")
-
-
-
+      if let myArgs = args as? [String: Any?],
+        let name = (myArgs["ios"] ?? myArgs["name"]) as? String
+      {
+        if #available(macOS 14.0, *) {
+          #if arch(arm64) || arch(i386) || arch(x86_64)
+            WidgetCenter.shared.reloadTimelines(ofKind: name)
+            result(true)
+          #endif
+        } else {
+          result(
+            FlutterError(
+              code: "-4", message: "Widgets are only available on iOS 14.0 and above", details: nil)
+          )
+        }
+      }else{
+        result(
+          FlutterError(
+            code: "-3", message: "InvalidArguments updateWidget must be called with name",
+            details: nil)
+        )
+      }
     } else if call.method == "initiallyLaunchedFromHomeWidget" {
       print("Handling Method For initially Launched from Home Widget ---->")
       // Idea: Handle not only home screen widgets with this function,

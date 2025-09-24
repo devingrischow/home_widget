@@ -9,7 +9,9 @@ import WidgetKit
 import SwiftUI
 
 private let widgetGroupId = "4DZJGNL44Y.example.widget_group"
-let countKey = "count";
+private let countKey = "count";
+
+let widgetName = "HomeWidgetExampleProvider"
 
 struct Provider: TimelineProvider {
     func placeholder(in context: Context) -> SimpleEntry {
@@ -56,6 +58,7 @@ struct simple_macos_widgetEntryView : View {
 
             
         }
+        .widgetURL(URL(string: "\(widgetName)://count?count=\(entry.count)&homeWidget"))
     }
 }
 

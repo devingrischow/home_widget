@@ -5,21 +5,42 @@ import AppIntents
 import WidgetKit
 
 
-let minimumVersionMessage = "Widgets are only available on macOS 14.0 and above"
-
-
+@available(macOS 10.15.4, *)
 public class HomeWidgetPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
   private static var groupId: String?
+
+  
+  //Needs for Minimum Version
+  //WidgetKit macOS minimum 11.0+: https://developer.apple.com/documentation/widgetkit
+  //Shared Preferences with Suit Name min; 10.9+: https://developer.apple.com/documentation/Foundation/UserDefaults/init(suiteName:)
+  //Widget URL Open From min version; 11.0+: https://developer.apple.com/documentation/swiftui/view/widgeturl(_:)
+  //Reload Timelines min; 11.0+, with widgetkit: https://developer.apple.com/documentation/widgetkit/widgetcenter/reloadtimelines(ofkind:)
+  // Minimum macOS Widget Version = 11.0+
+
+
+  //Needs for Minimum Interactible Version:
+  //Desktop Widget Minimum Version; 14: https://support.apple.com/guide/mac-help/add-and-customize-widgets-mchl52be5da5/14.0/mac/14.0
+  //  -MacOs Sonoma Also introduced fully interactible widgets
+  //Widget With Intent Init min version; 14: https://developer.apple.com/documentation/SwiftUI/Button/init(_:intent:)-7urde
+  // Minimum Interactible macOS Widget Version: 14.0+
+
+
 
   //Configuration content for home screen mac apps ∏
   //Home screen mac apps were only introduced recently,
 
-  //Configuration Borrowed from ios, limited to macOS version 14.
-  //Reasoning: home screen interactable widgets were introduced in that version, 
+  //Configuration Borrowed from ios
+  //Limited to macOS version 14.
+  //Note: Reasoning: home screen interactable widgets were introduced in that version, 
   //For simple management limit it to that version
+  //Configuration Lookup requires WidgetConfigurationIntent[https://developer.apple.com/documentation/appintents/widgetconfigurationintent]
   @available(macOS 14.0, *)
   private static var configurationLookup: [String: any WidgetConfigurationIntent.Type] = [:]
 
+  //Minimum Versiuion Required: 14
+  //Note: Reasoning: 
+  //Configuration Widgets were introduced in macOS 14
+  //Powered With `WidgetConfigurationIntent`, https://developer.apple.com/documentation/appintents/widgetconfigurationintent
   @available(macOS 14.0, *)
   public static func setConfigurationLookup(
     to configuration: [String: any WidgetConfigurationIntent.Type]
@@ -38,9 +59,15 @@ public class HomeWidgetPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
 
   private var eventSink: FlutterEventSink?
 
+  //*Constants
+
   private let notInitializedError = FlutterError(
     code: "-7", message: "AppGroupId not set. Call setAppGroupId first", details: nil
   )
+
+  private let minimumVersionMessage:String = "Widgets are only available on macOS 11.0 and above"
+  private let minimumInteractibleWidgetVersion:String = "Widgets with Intents are only available on macOS 14.0 and above"
+  //----
 
   private static func isRunningInAppExtension() -> Bool {
     let bundleURL = Bundle.main.bundleURL
@@ -64,13 +91,21 @@ public class HomeWidgetPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
     eventChannel.setStreamHandler(instance)
     
     guard isRunningInAppExtension() == false else {
+      print("App NOT running in extension")
       return
     }
 
-    let selector = NSSelectorFromString("addApplicationDelegate:")
-    if registrar.responds(to: selector) {
-      registrar.perform(selector, with: instance)
-    }
+    registrar.addApplicationDelegate(instance)
+
+    // Changed: 9/24/25 changed from NSSelector to .addApplicationDelegate 
+    //More preformative and should still be capable for all versions that can support the widgets
+    // let selector = NSSelectorFromString("addApplicationDelegate:")
+    // if registrar.responds(to: selector) {
+    //   print("Register Responded")
+    //   registrar.perform(selector, with: instance)
+    // }else{
+    //   print("Failed to Register")
+    // }
   }
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -173,7 +208,9 @@ public class HomeWidgetPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
       if let myArgs = args as? [String: Any?],
         let name = (myArgs["ios"] ?? myArgs["name"]) as? String
       {
-        if #available(macOS 14.0, *) {
+        //Reload Timelines Works with all versions of widgetKit
+        //From: https://developer.apple.com/documentation/widgetkit/widgetcenter/reloadtimelines(ofkind:)
+        if #available(macOS 11.0, *) {
           #if arch(arm64) || arch(i386) || arch(x86_64)
             WidgetCenter.shared.reloadTimelines(ofKind: name)
             result(true)
@@ -181,7 +218,7 @@ public class HomeWidgetPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
         } else {
           result(
             FlutterError(
-              code: "-4", message: "Widgets are only available on iOS 14.0 and above", details: nil)
+              code: "-4", message: minimumVersionMessage, details: nil)
           )
         }
       }else{
@@ -192,9 +229,17 @@ public class HomeWidgetPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
         )
       }
     } else if call.method == "initiallyLaunchedFromHomeWidget" {
-      print("Handling Method For initially Launched from Home Widget ---->")
+      logToFile("Handling Method For initially Launched from Home Widget ---->")
       // Idea: Handle not only home screen widgets with this function,
       // BUT ALSO Notification Center widgets
+
+      //Access NsApplication and get if launched from URL
+      
+     
+      logToFile("Curr InitalURl during Check: \(initialUrl)")
+      logToFile("GroupId At InitalURL Check: \(HomeWidgetPlugin.groupId)")
+
+      
       if HomeWidgetPlugin.groupId == nil {
         result(notInitializedError)
         return
@@ -206,12 +251,12 @@ public class HomeWidgetPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
         result(notInitializedError)
         return
       }
-
+      result(initialUrl?.absoluteString)
     } else if call.method == "isRequestPinWidgetSupported" {
-      //Not for macOS
+      //Not available for macOS
       result(false)
     } else if call.method == "requestPinWidget" {
-      //Not for macOS
+      //Not available for macOS
       result(nil)
     } else if call.method == "getInstalledWidgets" {
       print("Handling Get Installed Widgets ---->")
@@ -227,7 +272,7 @@ public class HomeWidgetPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
   public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink)
     -> FlutterError?
   {
-    print("<-- On List Called")
+    print("<-- On Listen Called")
     eventSink = events
     return nil
   }
@@ -237,52 +282,50 @@ public class HomeWidgetPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
     eventSink = nil
     return nil
   }
-
-  //Multiple Handlers for application(s)
-  public func application(_ application: NSApplication, open urls: [URL]) {
-      print("Application Handed Urls: \(urls)")
-  }
-    
-  public func applicationDidFinishLaunching(_ notification: Notification) {
-      // notification.userInfo is usually empty/nil for widget launches
-      // This just tells you the app finished launching, not WHY
-      print("App launched")
-      // The notification doesn't contain widget info
-   }
-
   
-  
-//  public func application(
-//    _ application: NSApplication,
-//    didFinishLaunchingWithOptions launchOptions: [AnyHashable: Any] = [:]
-//  ) -> Bool {
-//    print("<--- Application called")
-//      NSApplication.userinfo
-//    let launchUrl = (launchOptions[UIApplication.LaunchOptionsKey.url] as? NSURL)?.absoluteURL
-//    if launchUrl != nil && isWidgetUrl(url: launchUrl!) {
-//      initialUrl = launchUrl?.absoluteURL
-//      latestUrl = initialUrl
-//    }
-//    return true
-//  }
-//
-//  public func application(
-//    _ application: UIApplication, open url: URL,
-//    options: [UIApplication.OpenURLOptionsKey: Any] = [:]
-//  ) -> Bool {
-//    print("<--- Application called: URL given: \(url)")
-//
-//    if isWidgetUrl(url: url) {
-//      latestUrl = url
-//      return true
-//    }
-//    return false
-//  }
+  //Changed: 9/24/25 Different from the iOS way of opening. 
+  // iOS uses https://developer.apple.com/documentation/UIKit/UIApplicationDelegate/application(_:open:options:)
+  //This Allows for more easily opening the app from different URLs
+  //
+  //Function from: https://api.flutter.dev/macos-embedder/protocol_flutter_app_lifecycle_delegate-p.html#aec2ebf324f911ae9b560c2c767a7d594
+  //Compiler error for new function name, handleopenurl is changed
+  @objc
+  public func handleOpen(_ urls: [URL]) -> Bool {
+    // Handle the URLs here
+    logToFile("Handling Open From Urls: \(urls)")
+    //Launch url should be the ONLY item in the array from launch
+    let launchURL = urls[0]
+
+
+    if isWidgetUrl(url: launchURL) {
+      logToFile("Passed URL Check, \(launchURL)")
+      //Set the latestUrl to the launchedURL
+      initialUrl = launchURL
+      latestUrl = launchURL
+      return true
+    }
+
+    return false // or false depending on success
+}
+
+
+
+
+
+
 
   private func isWidgetUrl(url: URL) -> Bool {
-    print("Is widgetURl Called. URL given: \(url)")
+    logToFile("Is widgetURl Called. URL given: \(url)")
     let components = URLComponents.init(url: url, resolvingAgainstBaseURL: false)
-    return components?.queryItems?.contains(where: { (item) in item.name == "homeWidget" }) ?? false
+    logToFile("URL Components: \(components). QueryItems: \(components?.queryItems)")
+    
+    let result = components?.queryItems?.contains(where: { (item) in item.name == "homeWidget" }) ?? false
+
+    
+    logToFile("Result of if url is WidgetURL: \(result)")
+
+
+    return result
   }
 
 
@@ -327,4 +370,37 @@ extension IntentParameter: _AnyIntentParameter {
   var anyWrappedValue: Any {
     return wrappedValue
   }
+}
+
+// Example: Write to Documents directory
+@available(macOS 10.15.4, *)
+func logToFile(_ message: String) {
+    let documentsPath = FileManager.default.urls(for: .documentDirectory, 
+                                               in: .userDomainMask)[0]
+    let logURL = documentsPath.appendingPathComponent("app_log.txt")
+    
+    let dateFormat = DateFormatter()
+    dateFormat.dateFormat = "yyyy-MM-dd_HH-mm-ss"
+    let timestamp = dateFormat.string(from: Date())
+    let logEntry = "\(timestamp): \(message)\n"
+    print("Log Entry: \(logEntry)")
+    if let data = logEntry.data(using: .utf8) {
+        do{
+            if let fileHandle = try? FileHandle(forWritingTo: logURL) {
+                try fileHandle.seekToEnd()
+                fileHandle.write(data)
+                try fileHandle.close()
+            } else {
+                // Create new file
+                try data.write(to: logURL)
+            }
+        }catch{
+            print("error trying to write to file")
+        }
+        
+                
+            
+        
+        
+    }
 }

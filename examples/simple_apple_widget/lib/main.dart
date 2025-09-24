@@ -12,7 +12,7 @@ import 'package:home_widget/home_widget.dart';
 //MacOS Requires format of TEAMID.TeamName.Project to work
 //Signing Certificate MUST also be in Development 
 //Most Reliable Operation has occured when Running through Xcode.
-//Sep 22, 2025: Note: Continue to monitor and improve reliability and stability while adding more features.
+//  Sep 22, 2025: Note: Continue to monitor and improve reliability and stability while adding more features.
 const groupID = "4DZJGNL44Y.example.widget_group";
 
 const widgetName = "HomeWidgetExampleProvider";
@@ -94,6 +94,9 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       _counter++;
     });
+
+    
+
   }
 
   Future _sendNewCountData() async {
@@ -124,7 +127,9 @@ class _MyHomePageState extends State<MyHomePage> {
     try{
       return Future.wait([
         HomeWidget.getWidgetData<String>(countKey, defaultValue: '0')
-        .then( (value) => _counter = int.parse(value ?? '0') )
+        .then( (value) => setState(() {
+          _counter = int.parse(value ?? '0');
+        }) )
       ]);
     }on PlatformException catch (exception) {
       debugPrint('Error Getting Count Data. $exception');
@@ -136,27 +141,9 @@ class _MyHomePageState extends State<MyHomePage> {
     await _sendNewCountData();
     await _updateWidgets();
   }
-  
-
-  @override
-  void initState() {
-    super.initState();
-    HomeWidget.setAppGroupId(groupID);
-    HomeWidget.registerInteractivityCallback(interactiveCallback);
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _checkForWidgetLaunch();
-    HomeWidget.widgetClicked.listen(_launchedFromWidget);
-  }
-
-  void _checkForWidgetLaunch() {
-    HomeWidget.initiallyLaunchedFromHomeWidget().then(_launchedFromWidget);
-  }
 
   void _launchedFromWidget(Uri? uri) {
+    print("Checked Uri: $uri");
     if (uri != null) {
       showDialog(
         context: context,
@@ -167,6 +154,28 @@ class _MyHomePageState extends State<MyHomePage> {
       );
     }
   }
+
+  void _checkForWidgetLaunch() {
+    HomeWidget.initiallyLaunchedFromHomeWidget().then(_launchedFromWidget);
+  }
+  
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _checkForWidgetLaunch();
+    HomeWidget.widgetClicked.listen(_launchedFromWidget);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    HomeWidget.setAppGroupId(groupID);
+    HomeWidget.registerInteractivityCallback(interactiveCallback);
+  }
+
+ 
+
+
 
   
 
@@ -181,7 +190,9 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: Center(
-        child: Column(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             const Text('You have pushed the button this many times:'),
@@ -194,14 +205,21 @@ class _MyHomePageState extends State<MyHomePage> {
             //2. Update the Count (just updates the count, pressing it also calls the updates)
             ElevatedButton(
               onPressed: _loadCountData, 
-              child: Text("Get Button Count", style: Theme.of(context).textTheme.headlineSmall,)
+              child: Text("Get Button Count")
             ),
 
             ElevatedButton(
               onPressed: _sendAndUpdate, 
-              child: Text("Update Widget Count", style: Theme.of(context).textTheme.headlineSmall,)
+              child: Text("Update Widget Count")
+            ),
+
+            ElevatedButton(
+              onPressed: _checkForWidgetLaunch, 
+              child: Text("Check if Launched from Widget")
             ),
           ],
+        )
+
         ),
       ),
       floatingActionButton: FloatingActionButton(

@@ -365,7 +365,6 @@ public class HomeWidgetPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
   }
     
     
-
   public func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [AnyHashable: Any] = [:]

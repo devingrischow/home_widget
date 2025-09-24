@@ -8,8 +8,10 @@
 import WidgetKit
 import SwiftUI
 
-private let widgetGroupId = "group.example.widget_group"
-let countKey = "count";
+private let widgetGroupId = "4DZJGNL44Y.example.widget_group"
+private let countKey = "count";
+
+let widgetName = "HomeWidgetExampleProvider"
 
 struct Provider: TimelineProvider {
     func placeholder(in context: Context) -> SimpleEntry {
@@ -17,11 +19,16 @@ struct Provider: TimelineProvider {
     }
 
     func getSnapshot(in context: Context, completion: @escaping (SimpleEntry) -> ()) {
-        let entry = SimpleEntry(date: Date(), count: "0")
+        print("Getting Snapshot")
+        let prefs = UserDefaults.init(suiteName: widgetGroupId)
+        let counterValue = prefs?.string(forKey: countKey) ?? "0"
+        print("Counter Values: \(counterValue)")
+        let entry = SimpleEntry(date: Date(), count: counterValue)
         completion(entry)
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> ()) {
+        print("Getting New TimeLine")
         
         getSnapshot(in: context) { (entry) in
             let timeline = Timeline(entries: [entry], policy: .atEnd)
@@ -51,6 +58,7 @@ struct simple_macos_widgetEntryView : View {
 
             
         }
+        .widgetURL(URL(string: "\(widgetName)://count?count=\(entry.count)&homeWidget"))
     }
 }
 

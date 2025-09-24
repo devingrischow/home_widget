@@ -9,8 +9,12 @@ import 'package:home_widget/home_widget.dart';
 
 
 
+//MacOS Requires format of TEAMID.TeamName.Project to work
+//Signing Certificate MUST also be in Development 
+//Most Reliable Operation has occured when Running through Xcode.
+//  Sep 22, 2025: Note: Continue to monitor and improve reliability and stability while adding more features.
+const groupID = "4DZJGNL44Y.example.widget_group";
 
-const groupID = "group.example.widget_group";
 const widgetName = "HomeWidgetExampleProvider";
 const iOSWidgetName = "HomeWidgetExample";
 
@@ -90,6 +94,9 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       _counter++;
     });
+
+    
+
   }
 
   Future _sendNewCountData() async {
@@ -116,10 +123,13 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future _loadCountData() async {
+    print("Loading Count Data");
     try{
       return Future.wait([
         HomeWidget.getWidgetData<String>(countKey, defaultValue: '0')
-        .then( (value) => _counter = int.parse(value ?? '0') )
+        .then( (value) => setState(() {
+          _counter = int.parse(value ?? '0');
+        }) )
       ]);
     }on PlatformException catch (exception) {
       debugPrint('Error Getting Count Data. $exception');
@@ -132,25 +142,8 @@ class _MyHomePageState extends State<MyHomePage> {
     await _updateWidgets();
   }
 
-  @override
-  void initState() {
-    super.initState();
-    HomeWidget.setAppGroupId(groupID);
-    HomeWidget.registerInteractivityCallback(interactiveCallback);
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _checkForWidgetLaunch();
-    HomeWidget.widgetClicked.listen(_launchedFromWidget);
-  }
-
-  void _checkForWidgetLaunch() {
-    HomeWidget.initiallyLaunchedFromHomeWidget().then(_launchedFromWidget);
-  }
-
   void _launchedFromWidget(Uri? uri) {
+    print("Checked Uri: $uri");
     if (uri != null) {
       showDialog(
         context: context,
@@ -162,6 +155,64 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  void _checkForWidgetLaunch() {
+    HomeWidget.initiallyLaunchedFromHomeWidget().then(_launchedFromWidget);
+  }
+  
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _checkForWidgetLaunch();
+    HomeWidget.widgetClicked.listen(_launchedFromWidget);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    HomeWidget.setAppGroupId(groupID);
+    HomeWidget.registerInteractivityCallback(interactiveCallback);
+  }
+
+ 
+
+
+  Future<void> _getInstalledWidgets() async {
+    try{
+      final widgets = await HomeWidget.getInstalledWidgets();
+      if (!mounted) return;
+
+      //Internal Function In the function for handling labels
+      String getText(HomeWidgetInfo widget) {
+        if (Platform.isIOS) {
+          return '|iOS apple Family: ${widget.iOSFamily}, iOS Kind: ${widget.iOSKind}|';
+        }else{
+          return '|macOS apple Family: ${widget.iOSFamily}, macOS Kind: ${widget.iOSKind}|';
+        }
+      }
+
+      await showDialog(
+        context: context, 
+        builder: (buildContext) => AlertDialog(
+          title: const Text('Installed Widgets'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            spacing: 5,
+            children: [
+              Text('Number of widgets: ${widgets.length}'),
+              const Divider(),
+              for(final widget in widgets)
+                Text(
+                  getText(widget)
+                ),
+            ],
+          ),
+        ),
+      );
+
+    } on PlatformException catch (exception) {
+      debugPrint('Error getting widget information. $exception');
+    }
+  }
   
 
   @override
@@ -175,9 +226,12 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: Center(
-        child: Column(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+          spacing: 7,
           mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
+          children: [
             const Text('You have pushed the button this many times:'),
             Text(
               '$_counter',
@@ -188,14 +242,27 @@ class _MyHomePageState extends State<MyHomePage> {
             //2. Update the Count (just updates the count, pressing it also calls the updates)
             ElevatedButton(
               onPressed: _loadCountData, 
-              child: Text("Get Button Count", style: Theme.of(context).textTheme.headlineLarge,)
+              child: Text("Get Button Count")
             ),
 
             ElevatedButton(
               onPressed: _sendAndUpdate, 
-              child: Text("Update Widget Count", style: Theme.of(context).textTheme.headlineLarge,)
+              child: Text("Update Widget Count")
             ),
+
+            ElevatedButton(
+              onPressed: _checkForWidgetLaunch, 
+              child: Text("Check if Launched from Widget")
+            ),
+
+            ElevatedButton(
+              onPressed: _getInstalledWidgets, 
+              child: Text("Get Installed Widgets")
+            ),
+
           ],
+        )
+
         ),
       ),
       floatingActionButton: FloatingActionButton(

@@ -9,10 +9,18 @@ void main() {
   runApp(const MainApp());
 }
 
+//Specialized groupID for mac
+const macgroupID = "4DZJGNL44Y.example.config_widget_group";
+const iosGroupID = 'group.es.antonborri.configurableWidget';
+
+
+const groupID = macgroupID;
+
+
 /// Send a List of possible punctuations to the widget.
 Future<void> _initPunctuations() async {
   // Needed for communication between the app and the widget
-  await HomeWidget.setAppGroupId('group.es.antonborri.configurableWidget');
+  await HomeWidget.setAppGroupId(groupID);
   final punctuations = [
     '!',
     '!!!',

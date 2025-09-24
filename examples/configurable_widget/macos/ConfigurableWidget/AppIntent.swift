@@ -8,11 +8,65 @@
 import WidgetKit
 import AppIntents
 
+let macgroupID = "4DZJGNL44Y.example.config_widget_group";
+
+
 struct ConfigurationAppIntent: WidgetConfigurationIntent {
     static var title: LocalizedStringResource { "Configuration" }
     static var description: IntentDescription { "This is an example widget." }
 
-    // An example configurable parameter.
-    @Parameter(title: "Favorite Emoji", default: "😃")
-    var favoriteEmoji: String
+    // An example simple parameter
+    @Parameter(title: "Name", default: "World")
+    var name: String
+
+    @Parameter(title: "Punctuation")
+    var punctuation: PunctuationEntity
+}
+
+// Make Entity Codable so home_widget
+// That way home_widget can best extract the values from a configuration
+struct PunctuationEntity: AppEntity, Codable {
+  let id: String
+
+  static var typeDisplayRepresentation: TypeDisplayRepresentation = "Punctuation"
+  static var defaultQuery = PunctuationQuery()
+
+  var displayRepresentation: DisplayRepresentation {
+    DisplayRepresentation(title: "\(id)")
+  }
+}
+
+
+struct PunctuationQuery: EntityQuery {
+
+  func punctuations() -> [PunctuationEntity] {
+    let userDefaults = UserDefaults(suiteName: macgroupID)
+
+    do {
+      let jsonPunctuations = (userDefaults?.string(forKey: "punctuations") ?? "[\"!\"]").data(
+        using: .utf8)!
+      let stringArray = try JSONDecoder().decode([String].self, from: jsonPunctuations)
+      return stringArray.map { punctuation in
+        PunctuationEntity(id: punctuation)
+
+      }
+    } catch {
+      return [PunctuationEntity(id: "!")]
+    }
+
+  }
+
+  func entities(for identifiers: [PunctuationEntity.ID]) async throws -> [PunctuationEntity] {
+    let results = punctuations().filter { identifiers.contains($0.id) }
+    return results
+  }
+
+  func suggestedEntities() async throws -> [PunctuationEntity] {
+    return punctuations()
+  }
+
+  func defaultResult() async -> PunctuationEntity? {
+    try? await suggestedEntities().first
+  }
+
 }

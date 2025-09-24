@@ -176,7 +176,43 @@ class _MyHomePageState extends State<MyHomePage> {
  
 
 
+  Future<void> _getInstalledWidgets() async {
+    try{
+      final widgets = await HomeWidget.getInstalledWidgets();
+      if (!mounted) return;
 
+      //Internal Function In the function for handling labels
+      String getText(HomeWidgetInfo widget) {
+        if (Platform.isIOS) {
+          return '|iOS apple Family: ${widget.iOSFamily}, iOS Kind: ${widget.iOSKind}|';
+        }else{
+          return '|macOS apple Family: ${widget.iOSFamily}, macOS Kind: ${widget.iOSKind}|';
+        }
+      }
+
+      await showDialog(
+        context: context, 
+        builder: (buildContext) => AlertDialog(
+          title: const Text('Installed Widgets'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            spacing: 5,
+            children: [
+              Text('Number of widgets: ${widgets.length}'),
+              const Divider(),
+              for(final widget in widgets)
+                Text(
+                  getText(widget)
+                ),
+            ],
+          ),
+        ),
+      );
+
+    } on PlatformException catch (exception) {
+      debugPrint('Error getting widget information. $exception');
+    }
+  }
   
 
   @override
@@ -193,8 +229,9 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
+          spacing: 7,
           mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
+          children: [
             const Text('You have pushed the button this many times:'),
             Text(
               '$_counter',
@@ -217,6 +254,12 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: _checkForWidgetLaunch, 
               child: Text("Check if Launched from Widget")
             ),
+
+            ElevatedButton(
+              onPressed: _getInstalledWidgets, 
+              child: Text("Get Installed Widgets")
+            ),
+
           ],
         )
 
